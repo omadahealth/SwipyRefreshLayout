@@ -24,7 +24,6 @@ import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -92,6 +91,7 @@ public class SwipyRefreshLayout extends ViewGroup {
     private static final int DEFAULT_CIRCLE_TARGET = 64;
 
     private View mTarget; // the target of the gesture
+    private SwipyRefreshLayoutDirection mDirection;
     private OnRefreshListener mListener;
     private boolean mRefreshing = false;
     private int mTouchSlop;
@@ -281,6 +281,10 @@ public class SwipyRefreshLayout extends ViewGroup {
         final TypedArray a = context.obtainStyledAttributes(attrs, LAYOUT_ATTRS);
         setEnabled(a.getBoolean(0, true));
         a.recycle();
+
+        final TypedArray a2 = context.obtainStyledAttributes(attrs, R.styleable.SwipyRefreshLayout);
+        mDirection = SwipyRefreshLayoutDirection.getFromInt(a2.getInt(R.styleable.SwipyRefreshLayout_direction, 0));
+        a2.recycle();
 
         final DisplayMetrics metrics = getResources().getDisplayMetrics();
         mCircleWidth = (int) (CIRCLE_DIAMETER * metrics.density);
@@ -568,7 +572,19 @@ public class SwipyRefreshLayout extends ViewGroup {
                 MeasureSpec.makeMeasureSpec(mCircleHeight, MeasureSpec.EXACTLY));
         if (!mUsingCustomStart && !mOriginalOffsetCalculated) {
             mOriginalOffsetCalculated = true;
-            mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();  // TODO
+
+            switch (mDirection) {
+                case TOP:
+                    mCurrentTargetOffsetTop = mOriginalOffsetTop = -mCircleView.getMeasuredHeight();
+                    break;
+                case BOTTOM:
+                    mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                    break;
+                case BOTH:
+                default:
+                    mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();  // TODO
+                    break;
+            }
         }
         mCircleViewIndex = -1;
         // Get the index of the circleview.
@@ -584,40 +600,39 @@ public class SwipyRefreshLayout extends ViewGroup {
      * @return Whether it is possible for the child view of this layout to
      * scroll up. Override this if the child view is a custom view.
      */
-    /*
     public boolean canChildScrollUp() {
         if (android.os.Build.VERSION.SDK_INT < 14) {
             if (mTarget instanceof AbsListView) {
                 final AbsListView absListView = (AbsListView) mTarget;
                 return absListView.getChildCount() > 0
                         && (absListView.getFirstVisiblePosition() > 0 || absListView.getChildAt(0)
-                                .getTop() < absListView.getPaddingTop());
+                        .getTop() < absListView.getPaddingTop());
             } else {
                 return mTarget.getScrollY() > 0;
             }
         } else {
             return ViewCompat.canScrollVertically(mTarget, -1);
         }
-    }*/
-    public boolean canChildScrollUp() {
-        if (android.os.Build.VERSION.SDK_INT < 14) {
-            if (mTarget instanceof AbsListView) {
-                final AbsListView absListView = (AbsListView) mTarget;
-                if (absListView.getLastVisiblePosition() + 1 == absListView.getCount()) {
-                    int lastIndex = absListView.getLastVisiblePosition() - absListView.getFirstVisiblePosition();
-
-                    boolean res = absListView.getChildAt(lastIndex).getBottom() == absListView.getPaddingBottom();
-
-                    return res;
-                }
-                return true;
-            } else {
-                return mTarget.getScrollY() > 0;
-            }
-        } else {
-            return ViewCompat.canScrollVertically(mTarget, 1);
-        }
     }
+//    public boolean canChildScrollUp() {
+//        if (android.os.Build.VERSION.SDK_INT < 14) {
+//            if (mTarget instanceof AbsListView) {
+//                final AbsListView absListView = (AbsListView) mTarget;
+//                if (absListView.getLastVisiblePosition() + 1 == absListView.getCount()) {
+//                    int lastIndex = absListView.getLastVisiblePosition() - absListView.getFirstVisiblePosition();
+//
+//                    boolean res = absListView.getChildAt(lastIndex).getBottom() == absListView.getPaddingBottom();
+//
+//                    return res;
+//                }
+//                return true;
+//            } else {
+//                return mTarget.getScrollY() > 0;
+//            }
+//        } else {
+//            return ViewCompat.canScrollVertically(mTarget, 1);
+//        }
+//    }
 
 
     public boolean canChildScrollDown() {
@@ -643,7 +658,6 @@ public class SwipyRefreshLayout extends ViewGroup {
         }
     }
 
-
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         ensureTarget();
@@ -654,10 +668,26 @@ public class SwipyRefreshLayout extends ViewGroup {
             mReturningToStart = false;
         }
 
-        //if (!isEnabled() || mReturningToStart || canChildScrollUp() || mRefreshing) {
-        if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {  // TODO
-            // Fail fast if we're not in a state where a swipe is possible
-            return false;
+        switch (mDirection) {
+            case TOP:
+                if (!isEnabled() || mReturningToStart || canChildScrollUp() || mRefreshing) {
+                    // Fail fast if we're not in a state where a swipe is possible
+                    return false;
+                }
+                break;
+            case BOTTOM:
+                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {
+                    // Fail fast if we're not in a state where a swipe is possible
+                    return false;
+                }
+                break;
+            case BOTH:
+            default:
+                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {  // TODO
+                    // Fail fast if we're not in a state where a swipe is possible
+                    return false;
+                }
+                break;
         }
 
         switch (action) {
@@ -673,7 +703,6 @@ public class SwipyRefreshLayout extends ViewGroup {
 
             case MotionEvent.ACTION_MOVE:
                 if (mActivePointerId == INVALID_POINTER) {
-                    Log.e(LOG_TAG, "Got ACTION_MOVE event but don't have an active pointer id.");
                     return false;
                 }
 
@@ -681,8 +710,19 @@ public class SwipyRefreshLayout extends ViewGroup {
                 if (y == -1) {
                     return false;
                 }
-                //final float yDiff = y - mInitialMotionY;
-                final float yDiff = mInitialMotionY - y;   // TODO                
+                float yDiff;
+                switch (mDirection) {
+                    case TOP:
+                        yDiff = y - mInitialMotionY;
+                        break;
+                    case BOTTOM:
+                        yDiff = mInitialMotionY - y;
+                        break;
+                    case BOTH:
+                    default:
+                        yDiff = mInitialMotionY - y;   // TODO
+                        break;
+                }
                 if (yDiff > mTouchSlop && !mIsBeingDragged) {
                     mIsBeingDragged = true;
                     mProgress.setAlpha(STARTING_PROGRESS_ALPHA);
@@ -728,10 +768,26 @@ public class SwipyRefreshLayout extends ViewGroup {
             mReturningToStart = false;
         }
 
-        //if (!isEnabled() || mReturningToStart || canChildScrollUp()) {
-        if (!isEnabled() || mReturningToStart || canChildScrollDown()) {  // TODO
-            // Fail fast if we're not in a state where a swipe is possible
-            return false;
+        switch (mDirection) {
+            case TOP:
+                if (!isEnabled() || mReturningToStart || canChildScrollUp() || mRefreshing) {
+                    // Fail fast if we're not in a state where a swipe is possible
+                    return false;
+                }
+                break;
+            case BOTTOM:
+                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {
+                    // Fail fast if we're not in a state where a swipe is possible
+                    return false;
+                }
+                break;
+            case BOTH:
+            default:
+                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {  // TODO
+                    // Fail fast if we're not in a state where a swipe is possible
+                    return false;
+                }
+                break;
         }
 
         switch (action) {
@@ -743,13 +799,24 @@ public class SwipyRefreshLayout extends ViewGroup {
             case MotionEvent.ACTION_MOVE: {
                 final int pointerIndex = MotionEventCompat.findPointerIndex(ev, mActivePointerId);
                 if (pointerIndex < 0) {
-                    Log.e(LOG_TAG, "Got ACTION_MOVE event but have an invalid active pointer id.");
                     return false;
                 }
 
                 final float y = MotionEventCompat.getY(ev, pointerIndex);
-                //final float overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
-                final float overscrollTop = (mInitialMotionY - y) * DRAG_RATE;  // TODO
+
+                float overscrollTop;
+                switch (mDirection) {
+                    case TOP:
+                        overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
+                        break;
+                    case BOTTOM:
+                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
+                        break;
+                    case BOTH:
+                    default:
+                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;  // TODO
+                        break;
+                }
                 if (mIsBeingDragged) {
                     mProgress.showArrow(true);
                     float originalDragPercent = overscrollTop / mTotalDragDistance;
@@ -817,14 +884,25 @@ public class SwipyRefreshLayout extends ViewGroup {
             case MotionEvent.ACTION_CANCEL: {
                 if (mActivePointerId == INVALID_POINTER) {
                     if (action == MotionEvent.ACTION_UP) {
-                        Log.e(LOG_TAG, "Got ACTION_UP event but don't have an active pointer id.");
                     }
                     return false;
                 }
                 final int pointerIndex = MotionEventCompat.findPointerIndex(ev, mActivePointerId);
                 final float y = MotionEventCompat.getY(ev, pointerIndex);
-                //final float overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
-                final float overscrollTop = (mInitialMotionY - y) * DRAG_RATE;   //TODO
+
+                float overscrollTop;
+                switch (mDirection) {
+                    case TOP:
+                        overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
+                        break;
+                    case BOTTOM:
+                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
+                        break;
+                    case BOTH:
+                    default:
+                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;   //TODO
+                        break;
+                }
                 mIsBeingDragged = false;
                 if (overscrollTop > mTotalDragDistance) {
                     setRefreshing(true, true /* notify */);
@@ -899,7 +977,18 @@ public class SwipyRefreshLayout extends ViewGroup {
             int targetTop = 0;
             int endTarget = 0;
             if (!mUsingCustomStart) {
-                endTarget = getMeasuredHeight() - (int) (mSpinnerFinalOffset); // TODO
+                switch (mDirection) {
+                    case TOP:
+                        endTarget = (int) (mSpinnerFinalOffset - Math.abs(mOriginalOffsetTop));
+                        break;
+                    case BOTTOM:
+                        endTarget = getMeasuredHeight() - (int) (mSpinnerFinalOffset);
+                        break;
+                    case BOTH:
+                    default:
+                        endTarget = getMeasuredHeight() - (int) (mSpinnerFinalOffset); // TODO
+                        break;
+                }
             } else {
                 endTarget = (int) mSpinnerFinalOffset;
             }
@@ -973,5 +1062,26 @@ public class SwipyRefreshLayout extends ViewGroup {
      */
     public interface OnRefreshListener {
         public void onRefresh();
+    }
+
+    public SwipyRefreshLayoutDirection getDirection() {
+        return mDirection;
+    }
+
+    public void setDirection(SwipyRefreshLayoutDirection direction) {
+        this.mDirection = direction;
+
+        switch (mDirection) {
+            case TOP:
+                mCurrentTargetOffsetTop = mOriginalOffsetTop = -mCircleView.getMeasuredHeight();
+                break;
+            case BOTTOM:
+                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                break;
+            case BOTH:
+            default:
+                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();  // TODO
+                break;
+        }
     }
 }
