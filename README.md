@@ -67,7 +67,9 @@ mSwipyRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTTON);
 
 ### Credits
 
-### Made by olivierg13 and StoyanD
+### By Developers:
+            [Olivier Goutay](https://github.com/olivierg13) and [Stoyan Dimitrov](https://github.com/StoyanD)
+
 
 ========
 
