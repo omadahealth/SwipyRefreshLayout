@@ -578,7 +578,7 @@ public class SwipyRefreshLayout extends ViewGroup {
                     mCurrentTargetOffsetTop = mOriginalOffsetTop = -mCircleView.getMeasuredHeight();
                     break;
                 case BOTTOM:
-                    mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();  // TODO
+                    mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
                     break;
                 case BOTH:
                 default:
@@ -676,7 +676,7 @@ public class SwipyRefreshLayout extends ViewGroup {
                 }
                 break;
             case BOTTOM:
-                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {  // TODO
+                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {
                     // Fail fast if we're not in a state where a swipe is possible
                     return false;
                 }
@@ -716,7 +716,7 @@ public class SwipyRefreshLayout extends ViewGroup {
                         yDiff = y - mInitialMotionY;
                         break;
                     case BOTTOM:
-                        yDiff = mInitialMotionY - y;   // TODO
+                        yDiff = mInitialMotionY - y;
                         break;
                     case BOTH:
                     default:
@@ -776,7 +776,7 @@ public class SwipyRefreshLayout extends ViewGroup {
                 }
                 break;
             case BOTTOM:
-                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {  // TODO
+                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {
                     // Fail fast if we're not in a state where a swipe is possible
                     return false;
                 }
@@ -810,7 +810,7 @@ public class SwipyRefreshLayout extends ViewGroup {
                         overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
                         break;
                     case BOTTOM:
-                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;  // TODO
+                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
                         break;
                     case BOTH:
                     default:
@@ -896,7 +896,7 @@ public class SwipyRefreshLayout extends ViewGroup {
                         overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
                         break;
                     case BOTTOM:
-                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;   //TODO
+                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
                         break;
                     case BOTH:
                     default:
@@ -982,7 +982,7 @@ public class SwipyRefreshLayout extends ViewGroup {
                         endTarget = (int) (mSpinnerFinalOffset - Math.abs(mOriginalOffsetTop));
                         break;
                     case BOTTOM:
-                        endTarget = getMeasuredHeight() - (int) (mSpinnerFinalOffset); // TODO
+                        endTarget = getMeasuredHeight() - (int) (mSpinnerFinalOffset);
                         break;
                     case BOTH:
                     default:
@@ -1076,7 +1076,7 @@ public class SwipyRefreshLayout extends ViewGroup {
                 mCurrentTargetOffsetTop = mOriginalOffsetTop = -mCircleView.getMeasuredHeight();
                 break;
             case BOTTOM:
-                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();  // TODO
+                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
                 break;
             case BOTH:
             default:
