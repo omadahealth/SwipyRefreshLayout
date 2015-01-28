@@ -834,8 +834,12 @@ public class SwipyRefreshLayout extends ViewGroup {
                             (tensionSlingshotPercent / 4), 2)) * 2f;
                     float extraMove = (slingshotDist) * tensionPercent * 2;
 
-                    // int targetY = mOriginalOffsetTop + (int) ((slingshotDist * dragPercent) + extraMove);
-                    int targetY = mOriginalOffsetTop - (int) ((slingshotDist * dragPercent) + extraMove);
+                    int targetY;
+                    if (mDirection == SwipyRefreshLayoutDirection.TOP) {
+                        targetY = mOriginalOffsetTop + (int) ((slingshotDist * dragPercent) + extraMove);
+                    } else {
+                        targetY = mOriginalOffsetTop - (int) ((slingshotDist * dragPercent) + extraMove);
+                    }
                     // where 1.0f is a full circle
                     if (mCircleView.getVisibility() != View.VISIBLE) {
                         mCircleView.setVisibility(View.VISIBLE);
