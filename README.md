@@ -67,13 +67,14 @@ mSwipyRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTTON);
 
 ### TODO
 
-* Handle both direction at the same time (doesn't work yet)
+* Tell OnRefreshListener on which direction the refresh is triggered.
 
 ========
 
 ### Credits
 
-### By Developers:
+### Forked from https://github.com/OrangeGangsters/SwipyRefreshLayout
+by Developers:
 [Olivier Goutay](https://github.com/olivierg13) and [Stoyan Dimitrov](https://github.com/StoyanD)
 
 
