@@ -22,7 +22,7 @@ If you want an example on how to use it, you can find an example app in this rep
         android:id="@+id/swipyrefreshlayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:direction="bottom">
+        app:direction="both">
 
         <ListView
             android:id="@+id/listview"
@@ -35,8 +35,9 @@ If you want an example on how to use it, you can find an example app in this rep
 ```
 mSwipyRefreshLayout.setOnRefreshListener(new SwipyRefreshLayout.OnRefreshListener() {
             @Override
-            public void onRefresh() {
-
+            public void onRefresh(SwipyRefreshLayoutDirection direction) {
+                Log.d("MainActivity", "Refresh triggered at "
+                    + (direction == SwipyRefreshLayoutDirection.TOP ? "top" : "bottom"));
             }
 });
 ```
@@ -53,6 +54,10 @@ OR
 ```
 app:direction="bottom"
 ```
+OR
+```
+app:direction="both"
+```
 
 * Programmatically:
 ```
@@ -60,23 +65,23 @@ mSwipyRefreshLayout.setDirection(SwipyRefreshLayoutDirection.TOP);
 ```
 OR
 ```
-mSwipyRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTTON);
+mSwipyRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTTOM);
+```
+OR
+```
+mSwipyRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTH);
 ```
 
-========
-
-### TODO
-
-* Tell OnRefreshListener on which direction the refresh is triggered.
 
 ========
 
 ### Credits
 
-### Forked from https://github.com/OrangeGangsters/SwipyRefreshLayout
-by Developers:
+### By Developers:
 [Olivier Goutay](https://github.com/olivierg13) and [Stoyan Dimitrov](https://github.com/StoyanD)
 
+### Pull Requests By:
+[realaboo](https://github.com/realaboo)
 
 ========
 
