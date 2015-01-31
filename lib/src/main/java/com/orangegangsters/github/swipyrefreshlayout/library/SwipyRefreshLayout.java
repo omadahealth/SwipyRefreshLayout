@@ -93,7 +93,6 @@ public class SwipyRefreshLayout extends ViewGroup {
     private View mTarget; // the target of the gesture
     private SwipyRefreshLayoutDirection mDirection;
     private boolean mBothDirection;
-    private boolean mRawDirectionDetermined;
     private OnRefreshListener mListener;
     private boolean mRefreshing = false;
     private int mTouchSlop;
@@ -294,7 +293,6 @@ public class SwipyRefreshLayout extends ViewGroup {
             mDirection = SwipyRefreshLayoutDirection.TOP;
             mBothDirection = true;
         }
-        mRawDirectionDetermined = true;
         a2.recycle();
 
         final DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -678,18 +676,14 @@ public class SwipyRefreshLayout extends ViewGroup {
 
         switch (mDirection) {
             case BOTTOM:
-                if (!isEnabled() || mReturningToStart
-                        || ((!mBothDirection || mRawDirectionDetermined) && canChildScrollDown())
-                        || mRefreshing) {
+                if (!isEnabled() || mReturningToStart || (!mBothDirection && canChildScrollDown()) || mRefreshing) {
                     // Fail fast if we're not in a state where a swipe is possible
                     return false;
                 }
                 break;
             case TOP:
             default:
-                if (!isEnabled() || mReturningToStart
-                        || ((!mBothDirection || mRawDirectionDetermined) && canChildScrollUp())
-                        || mRefreshing) {
+                if (!isEnabled() || mReturningToStart || (!mBothDirection && canChildScrollUp()) || mRefreshing) {
                     // Fail fast if we're not in a state where a swipe is possible
                     return false;
                 }
@@ -721,6 +715,10 @@ public class SwipyRefreshLayout extends ViewGroup {
                         setRawDirection(SwipyRefreshLayoutDirection.TOP);
                     } else if (y < mInitialMotionY) {
                         setRawDirection(SwipyRefreshLayoutDirection.BOTTOM);
+                    }
+                    if ((mDirection == SwipyRefreshLayoutDirection.BOTTOM && canChildScrollDown())
+                            || (mDirection == SwipyRefreshLayoutDirection.TOP && canChildScrollUp())) {
+                        return false;
                     }
                 }
                 float yDiff;
@@ -1071,7 +1069,6 @@ public class SwipyRefreshLayout extends ViewGroup {
     public void setDirection(SwipyRefreshLayoutDirection direction) {
         if (direction == SwipyRefreshLayoutDirection.BOTH) {
             mBothDirection = true;
-            mRawDirectionDetermined = false;
         } else {
             mBothDirection = false;
             mDirection = direction;
@@ -1090,7 +1087,6 @@ public class SwipyRefreshLayout extends ViewGroup {
 
     // only TOP or Bottom
     private void setRawDirection(SwipyRefreshLayoutDirection direction) {
-        mRawDirectionDetermined = true;
         if (mDirection == direction) {
             return;
         }
