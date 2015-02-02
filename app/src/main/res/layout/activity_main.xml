@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/bottom_layout"
-        app:direction="bottom">
+        app:direction="both">
 
         <ListView
             android:id="@+id/listview"
@@ -41,6 +41,15 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/button_margin"
             android:text="BOTTOM"
+            android:layout_weight="1"/>
+
+
+        <Button
+            android:id="@+id/button_both"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/button_margin"
+            android:text="BOTH"
             android:layout_weight="1"/>
         </LinearLayout>
 

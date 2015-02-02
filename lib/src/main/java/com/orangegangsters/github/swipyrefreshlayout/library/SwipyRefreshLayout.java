@@ -92,6 +92,7 @@ public class SwipyRefreshLayout extends ViewGroup {
 
     private View mTarget; // the target of the gesture
     private SwipyRefreshLayoutDirection mDirection;
+    private boolean mBothDirection;
     private OnRefreshListener mListener;
     private boolean mRefreshing = false;
     private int mTouchSlop;
@@ -164,7 +165,7 @@ public class SwipyRefreshLayout extends ViewGroup {
                 mProgress.start();
                 if (mNotify) {
                     if (mListener != null) {
-                        mListener.onRefresh();
+                        mListener.onRefresh(mDirection);
                     }
                 }
             } else {
@@ -283,7 +284,15 @@ public class SwipyRefreshLayout extends ViewGroup {
         a.recycle();
 
         final TypedArray a2 = context.obtainStyledAttributes(attrs, R.styleable.SwipyRefreshLayout);
-        mDirection = SwipyRefreshLayoutDirection.getFromInt(a2.getInt(R.styleable.SwipyRefreshLayout_direction, 0));
+        SwipyRefreshLayoutDirection direction
+                = SwipyRefreshLayoutDirection.getFromInt(a2.getInt(R.styleable.SwipyRefreshLayout_direction, 0));
+        if (direction != SwipyRefreshLayoutDirection.BOTH) {
+            mDirection = direction;
+            mBothDirection = false;
+        } else {
+            mDirection = SwipyRefreshLayoutDirection.TOP;
+            mBothDirection = true;
+        }
         a2.recycle();
 
         final DisplayMetrics metrics = getResources().getDisplayMetrics();
@@ -574,15 +583,12 @@ public class SwipyRefreshLayout extends ViewGroup {
             mOriginalOffsetCalculated = true;
 
             switch (mDirection) {
-                case TOP:
-                    mCurrentTargetOffsetTop = mOriginalOffsetTop = -mCircleView.getMeasuredHeight();
-                    break;
                 case BOTTOM:
                     mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
                     break;
-                case BOTH:
+                case TOP:
                 default:
-                    mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();  // TODO
+                    mCurrentTargetOffsetTop = mOriginalOffsetTop = -mCircleView.getMeasuredHeight();
                     break;
             }
         }
@@ -669,21 +675,15 @@ public class SwipyRefreshLayout extends ViewGroup {
         }
 
         switch (mDirection) {
-            case TOP:
-                if (!isEnabled() || mReturningToStart || canChildScrollUp() || mRefreshing) {
-                    // Fail fast if we're not in a state where a swipe is possible
-                    return false;
-                }
-                break;
             case BOTTOM:
-                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {
+                if (!isEnabled() || mReturningToStart || (!mBothDirection && canChildScrollDown()) || mRefreshing) {
                     // Fail fast if we're not in a state where a swipe is possible
                     return false;
                 }
                 break;
-            case BOTH:
+            case TOP:
             default:
-                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {  // TODO
+                if (!isEnabled() || mReturningToStart || (!mBothDirection && canChildScrollUp()) || mRefreshing) {
                     // Fail fast if we're not in a state where a swipe is possible
                     return false;
                 }
@@ -710,17 +710,25 @@ public class SwipyRefreshLayout extends ViewGroup {
                 if (y == -1) {
                     return false;
                 }
+                if (mBothDirection) {
+                    if (y > mInitialMotionY) {
+                        setRawDirection(SwipyRefreshLayoutDirection.TOP);
+                    } else if (y < mInitialMotionY) {
+                        setRawDirection(SwipyRefreshLayoutDirection.BOTTOM);
+                    }
+                    if ((mDirection == SwipyRefreshLayoutDirection.BOTTOM && canChildScrollDown())
+                            || (mDirection == SwipyRefreshLayoutDirection.TOP && canChildScrollUp())) {
+                        return false;
+                    }
+                }
                 float yDiff;
                 switch (mDirection) {
-                    case TOP:
-                        yDiff = y - mInitialMotionY;
-                        break;
                     case BOTTOM:
                         yDiff = mInitialMotionY - y;
                         break;
-                    case BOTH:
+                    case TOP:
                     default:
-                        yDiff = mInitialMotionY - y;   // TODO
+                        yDiff = y - mInitialMotionY;
                         break;
                 }
                 if (yDiff > mTouchSlop && !mIsBeingDragged) {
@@ -769,21 +777,15 @@ public class SwipyRefreshLayout extends ViewGroup {
         }
 
         switch (mDirection) {
-            case TOP:
-                if (!isEnabled() || mReturningToStart || canChildScrollUp() || mRefreshing) {
-                    // Fail fast if we're not in a state where a swipe is possible
-                    return false;
-                }
-                break;
             case BOTTOM:
                 if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {
                     // Fail fast if we're not in a state where a swipe is possible
                     return false;
                 }
                 break;
-            case BOTH:
+            case TOP:
             default:
-                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {  // TODO
+                if (!isEnabled() || mReturningToStart || canChildScrollUp() || mRefreshing) {
                     // Fail fast if we're not in a state where a swipe is possible
                     return false;
                 }
@@ -806,15 +808,12 @@ public class SwipyRefreshLayout extends ViewGroup {
 
                 float overscrollTop;
                 switch (mDirection) {
-                    case TOP:
-                        overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
-                        break;
                     case BOTTOM:
                         overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
                         break;
-                    case BOTH:
+                    case TOP:
                     default:
-                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;  // TODO
+                        overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
                         break;
                 }
                 if (mIsBeingDragged) {
@@ -835,7 +834,12 @@ public class SwipyRefreshLayout extends ViewGroup {
                     float extraMove = (slingshotDist) * tensionPercent * 2;
 
                     // int targetY = mOriginalOffsetTop + (int) ((slingshotDist * dragPercent) + extraMove);
-                    int targetY = mOriginalOffsetTop - (int) ((slingshotDist * dragPercent) + extraMove);
+                    int targetY;
+                    if (mDirection == SwipyRefreshLayoutDirection.TOP) {
+                        targetY = mOriginalOffsetTop + (int) ((slingshotDist * dragPercent) + extraMove);
+                    } else {
+                        targetY = mOriginalOffsetTop - (int) ((slingshotDist * dragPercent) + extraMove);
+                    }
                     // where 1.0f is a full circle
                     if (mCircleView.getVisibility() != View.VISIBLE) {
                         mCircleView.setVisibility(View.VISIBLE);
@@ -892,15 +896,12 @@ public class SwipyRefreshLayout extends ViewGroup {
 
                 float overscrollTop;
                 switch (mDirection) {
-                    case TOP:
-                        overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
-                        break;
                     case BOTTOM:
                         overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
                         break;
-                    case BOTH:
+                    case TOP:
                     default:
-                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;   //TODO
+                        overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
                         break;
                 }
                 mIsBeingDragged = false;
@@ -978,15 +979,12 @@ public class SwipyRefreshLayout extends ViewGroup {
             int endTarget = 0;
             if (!mUsingCustomStart) {
                 switch (mDirection) {
-                    case TOP:
-                        endTarget = (int) (mSpinnerFinalOffset - Math.abs(mOriginalOffsetTop));
-                        break;
                     case BOTTOM:
                         endTarget = getMeasuredHeight() - (int) (mSpinnerFinalOffset);
                         break;
-                    case BOTH:
+                    case TOP:
                     default:
-                        endTarget = getMeasuredHeight() - (int) (mSpinnerFinalOffset); // TODO
+                        endTarget = (int) (mSpinnerFinalOffset - Math.abs(mOriginalOffsetTop));
                         break;
                 }
             } else {
@@ -1061,26 +1059,46 @@ public class SwipyRefreshLayout extends ViewGroup {
      * triggers a refresh should implement this interface.
      */
     public interface OnRefreshListener {
-        public void onRefresh();
+        public void onRefresh(SwipyRefreshLayoutDirection direction);
     }
 
     public SwipyRefreshLayoutDirection getDirection() {
-        return mDirection;
+        return mBothDirection ? SwipyRefreshLayoutDirection.BOTH : mDirection;
     }
 
     public void setDirection(SwipyRefreshLayoutDirection direction) {
-        this.mDirection = direction;
+        if (direction == SwipyRefreshLayoutDirection.BOTH) {
+            mBothDirection = true;
+        } else {
+            mBothDirection = false;
+            mDirection = direction;
+        }
 
         switch (mDirection) {
-            case TOP:
-                mCurrentTargetOffsetTop = mOriginalOffsetTop = -mCircleView.getMeasuredHeight();
-                break;
             case BOTTOM:
                 mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
                 break;
-            case BOTH:
+            case TOP:
             default:
-                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();  // TODO
+                mCurrentTargetOffsetTop = mOriginalOffsetTop = -mCircleView.getMeasuredHeight();
+                break;
+        }
+    }
+
+    // only TOP or Bottom
+    private void setRawDirection(SwipyRefreshLayoutDirection direction) {
+        if (mDirection == direction) {
+            return;
+        }
+
+        mDirection = direction;
+        switch (mDirection) {
+            case BOTTOM:
+                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                break;
+            case TOP:
+            default:
+                mCurrentTargetOffsetTop = mOriginalOffsetTop = -mCircleView.getMeasuredHeight();
                 break;
         }
     }
