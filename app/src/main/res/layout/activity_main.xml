@@ -9,7 +9,7 @@
         android:id="@+id/swipyrefreshlayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/bottom_layout"
+        android:layout_above="@+id/button_refresh"
         app:direction="both">
 
         <ListView
@@ -19,6 +19,14 @@
 
     </com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
 
+    <Button
+        android:id="@+id/button_refresh"
+        android:layout_above="@+id/bottom_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Refresh"
+        android:layout_centerHorizontal="true" />
+
     <LinearLayout
         android:id="@+id/bottom_layout"
         android:layout_width="match_parent"
@@ -26,13 +34,14 @@
         android:orientation="horizontal"
         android:layout_alignParentBottom="true">
 
+
         <Button
             android:id="@+id/button_top"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/button_margin"
             android:text="TOP"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
 
         <Button
@@ -41,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/button_margin"
             android:text="BOTTOM"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
 
         <Button
@@ -50,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/button_margin"
             android:text="BOTH"
-            android:layout_weight="1"/>
-        </LinearLayout>
+            android:layout_weight="1" />
+    </LinearLayout>
 
 </RelativeLayout>

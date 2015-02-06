@@ -357,7 +357,15 @@ public class SwipyRefreshLayout extends ViewGroup {
             mRefreshing = refreshing;
             int endTarget = 0;
             if (!mUsingCustomStart) {
-                endTarget = (int) (mSpinnerFinalOffset + mOriginalOffsetTop);
+                switch (mDirection) {
+                    case BOTTOM:
+                        endTarget = getMeasuredHeight() - (int) (mSpinnerFinalOffset);
+                        break;
+                    case TOP:
+                    default:
+                        endTarget = (int) (mSpinnerFinalOffset - Math.abs(mOriginalOffsetTop));
+                        break;
+                }
             } else {
                 endTarget = (int) mSpinnerFinalOffset;
             }
@@ -1037,7 +1045,17 @@ public class SwipyRefreshLayout extends ViewGroup {
     private void setTargetOffsetTopAndBottom(int offset, boolean requiresUpdate) {
         mCircleView.bringToFront();
         mCircleView.offsetTopAndBottom(offset);
-        mCurrentTargetOffsetTop = mCircleView.getTop();
+
+        switch (mDirection) {
+            case BOTTOM:
+                mCurrentTargetOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                break;
+            case TOP:
+            default:
+                mCurrentTargetOffsetTop  = mCircleView.getTop();
+                break;
+        }
+//        mCurrentTargetOffsetTop = mCircleView.getTop();
         if (requiresUpdate && android.os.Build.VERSION.SDK_INT < 11) {
             invalidate();
         }
@@ -1076,7 +1094,8 @@ public class SwipyRefreshLayout extends ViewGroup {
 
         switch (mDirection) {
             case BOTTOM:
-                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                mCurrentTargetOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
                 break;
             case TOP:
             default:
@@ -1094,7 +1113,8 @@ public class SwipyRefreshLayout extends ViewGroup {
         mDirection = direction;
         switch (mDirection) {
             case BOTTOM:
-                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                mCurrentTargetOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
                 break;
             case TOP:
             default:

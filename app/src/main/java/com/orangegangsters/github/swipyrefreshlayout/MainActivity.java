@@ -19,6 +19,7 @@ public class MainActivity extends ActionBarActivity implements SwipyRefreshLayou
     private Button mTop;
     private Button mBottom;
     private Button mBoth;
+    private Button mButtonRefresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +39,12 @@ public class MainActivity extends ActionBarActivity implements SwipyRefreshLayou
         mTop = (Button) findViewById(R.id.button_top);
         mBottom = (Button) findViewById(R.id.button_bottom);
         mBoth = (Button) findViewById(R.id.button_both);
+        mButtonRefresh = (Button) findViewById(R.id.button_refresh);
 
         mTop.setOnClickListener(this);
         mBottom.setOnClickListener(this);
         mBoth.setOnClickListener(this);
+        mButtonRefresh.setOnClickListener(this);
     }
 
     @Override
@@ -55,6 +58,21 @@ public class MainActivity extends ActionBarActivity implements SwipyRefreshLayou
                 break;
             case R.id.button_both:
                 mSwipyRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTH);
+                break;
+            case R.id.button_refresh:
+                mSwipyRefreshLayout.setRefreshing(true);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Hide the refresh after 2sec
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mSwipyRefreshLayout.setRefreshing(false);
+                            }
+                        });
+                    }
+                }, 2000);
                 break;
         }
     }
