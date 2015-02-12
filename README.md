@@ -1,4 +1,4 @@
-SwipyRefreshLayout
+SwipyRefreshLayout [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-SwipyRefreshLayout-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/1423)
 ================
 
 A SwipeRefreshLayout extension that allows to swipe in both direction (API 9+)
@@ -10,8 +10,6 @@ To include in your project, add this to your build.gradle file:
 ```
 
 ![Demo](app/src/main/res/raw/github_gif.gif)
-
-[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-SwipyRefreshLayout-brightgreen.svg?style=flat)](https://android-arsenal.com/details/1/1423)
 
 ========
 
