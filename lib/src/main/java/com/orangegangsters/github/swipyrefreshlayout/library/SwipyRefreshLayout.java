@@ -1046,16 +1046,16 @@ public class SwipyRefreshLayout extends ViewGroup {
         mCircleView.bringToFront();
         mCircleView.offsetTopAndBottom(offset);
 
-        switch (mDirection) {
-            case BOTTOM:
-                mCurrentTargetOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
-                break;
-            case TOP:
-            default:
-                mCurrentTargetOffsetTop  = mCircleView.getTop();
-                break;
-        }
-//        mCurrentTargetOffsetTop = mCircleView.getTop();
+//        switch (mDirection) {
+//            case BOTTOM:
+//                mCurrentTargetOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+//                break;
+//            case TOP:
+//            default:
+//                mCurrentTargetOffsetTop  = mCircleView.getTop();
+//                break;
+//        }
+        mCurrentTargetOffsetTop = mCircleView.getTop();
         if (requiresUpdate && android.os.Build.VERSION.SDK_INT < 11) {
             invalidate();
         }
