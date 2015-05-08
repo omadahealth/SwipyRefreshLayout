@@ -103,6 +103,7 @@ public class SwipyRefreshLayout extends ViewGroup {
     private boolean mOriginalOffsetCalculated = false;
 
     private float mInitialMotionY;
+    private float mInitialDownY;
     private boolean mIsBeingDragged;
     private int mActivePointerId = INVALID_POINTER;
     // Whether this item is scaled up rather than clipped
@@ -703,11 +704,11 @@ public class SwipyRefreshLayout extends ViewGroup {
                 setTargetOffsetTopAndBottom(mOriginalOffsetTop - mCircleView.getTop(), true);
                 mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
                 mIsBeingDragged = false;
-                final float initialMotionY = getMotionEventY(ev, mActivePointerId);
-                if (initialMotionY == -1) {
+                final float initialDownY = getMotionEventY(ev, mActivePointerId);
+                if (initialDownY == -1) {
                     return false;
                 }
-                mInitialMotionY = initialMotionY;
+                mInitialDownY = initialDownY;
 
             case MotionEvent.ACTION_MOVE:
                 if (mActivePointerId == INVALID_POINTER) {
@@ -719,27 +720,37 @@ public class SwipyRefreshLayout extends ViewGroup {
                     return false;
                 }
                 if (mBothDirection) {
-                    if (y > mInitialMotionY) {
+                    if (y > mInitialDownY) {
                         setRawDirection(SwipyRefreshLayoutDirection.TOP);
-                    } else if (y < mInitialMotionY) {
+                    } else if (y < mInitialDownY) {
                         setRawDirection(SwipyRefreshLayoutDirection.BOTTOM);
                     }
                     if ((mDirection == SwipyRefreshLayoutDirection.BOTTOM && canChildScrollDown())
                             || (mDirection == SwipyRefreshLayoutDirection.TOP && canChildScrollUp())) {
+                        mInitialDownY = y;
                         return false;
                     }
                 }
                 float yDiff;
                 switch (mDirection) {
                     case BOTTOM:
-                        yDiff = mInitialMotionY - y;
+                        yDiff = mInitialDownY - y;
                         break;
                     case TOP:
                     default:
-                        yDiff = y - mInitialMotionY;
+                        yDiff = y - mInitialDownY;
                         break;
                 }
                 if (yDiff > mTouchSlop && !mIsBeingDragged) {
+                    switch (mDirection) {
+                        case BOTTOM:
+                            mInitialMotionY = mInitialDownY - mTouchSlop;
+                            break;
+                        case TOP:
+                        default:
+                            mInitialMotionY = mInitialDownY + mTouchSlop;
+                            break;
+                    }
                     mIsBeingDragged = true;
                     mProgress.setAlpha(STARTING_PROGRESS_ALPHA);
                 }
