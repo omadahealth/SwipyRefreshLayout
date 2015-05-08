@@ -592,7 +592,7 @@ public class SwipyRefreshLayout extends ViewGroup {
 
             switch (mDirection) {
                 case BOTTOM:
-                    mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                    mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight();
                     break;
                 case TOP:
                 default:
@@ -1094,8 +1094,7 @@ public class SwipyRefreshLayout extends ViewGroup {
 
         switch (mDirection) {
             case BOTTOM:
-                mCurrentTargetOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
-                mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight();
                 break;
             case TOP:
             default:
@@ -1113,8 +1112,7 @@ public class SwipyRefreshLayout extends ViewGroup {
         mDirection = direction;
         switch (mDirection) {
             case BOTTOM:
-                mCurrentTargetOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
-                mOriginalOffsetTop = getMeasuredHeight() - mCircleView.getMeasuredHeight();
+                mCurrentTargetOffsetTop = mOriginalOffsetTop = getMeasuredHeight();
                 break;
             case TOP:
             default:
