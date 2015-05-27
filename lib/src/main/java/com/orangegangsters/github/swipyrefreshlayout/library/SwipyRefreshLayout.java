@@ -56,6 +56,9 @@ import android.widget.AbsListView;
  * </p>
  */
 public class SwipyRefreshLayout extends ViewGroup {
+    private static final float MAX_SWIPE_DISTANCE_FACTOR = .6f;
+    private static final int REFRESH_TRIGGER_DISTANCE = 120;
+    
     // Maps to ProgressBar.Large style
     public static final int LARGE = MaterialProgressDrawable.LARGE;
     // Maps to ProgressBar default style
@@ -304,7 +307,6 @@ public class SwipyRefreshLayout extends ViewGroup {
         ViewCompat.setChildrenDrawingOrderEnabled(this, true);
         // the absolute offset has to take into account that the circle starts at an offset
         mSpinnerFinalOffset = DEFAULT_CIRCLE_TARGET * metrics.density;
-        mTotalDragDistance = mSpinnerFinalOffset;
     }
 
     protected int getChildDrawingOrder(int childCount, int i) {
@@ -535,6 +537,14 @@ public class SwipyRefreshLayout extends ViewGroup {
                     mTarget = child;
                     break;
                 }
+            }
+        }
+        if (mTotalDragDistance == -1) {
+            if (getParent() != null && ((View)getParent()).getHeight() > 0) {
+                final DisplayMetrics metrics = getResources().getDisplayMetrics();
+                mTotalDragDistance = (int) Math.min(
+                        ((View) getParent()) .getHeight() * MAX_SWIPE_DISTANCE_FACTOR,
+                        REFRESH_TRIGGER_DISTANCE * metrics.density);
             }
         }
     }
