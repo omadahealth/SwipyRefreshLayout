@@ -24,6 +24,7 @@ import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -56,9 +57,12 @@ import android.widget.AbsListView;
  * </p>
  */
 public class SwipyRefreshLayout extends ViewGroup {
+
+    public static final String TAG = "SwipyRefreshLayout";
+
     private static final float MAX_SWIPE_DISTANCE_FACTOR = .6f;
     private static final int REFRESH_TRIGGER_DISTANCE = 120;
-    
+
     // Maps to ProgressBar.Large style
     public static final int LARGE = MaterialProgressDrawable.LARGE;
     // Maps to ProgressBar default style
@@ -540,10 +544,10 @@ public class SwipyRefreshLayout extends ViewGroup {
             }
         }
         if (mTotalDragDistance == -1) {
-            if (getParent() != null && ((View)getParent()).getHeight() > 0) {
+            if (getParent() != null && ((View) getParent()).getHeight() > 0) {
                 final DisplayMetrics metrics = getResources().getDisplayMetrics();
                 mTotalDragDistance = (int) Math.min(
-                        ((View) getParent()) .getHeight() * MAX_SWIPE_DISTANCE_FACTOR,
+                        ((View) getParent()).getHeight() * MAX_SWIPE_DISTANCE_FACTOR,
                         REFRESH_TRIGGER_DISTANCE * metrics.density);
             }
         }
@@ -799,174 +803,178 @@ public class SwipyRefreshLayout extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        final int action = MotionEventCompat.getActionMasked(ev);
+        try {
+            final int action = MotionEventCompat.getActionMasked(ev);
 
-        if (mReturningToStart && action == MotionEvent.ACTION_DOWN) {
-            mReturningToStart = false;
-        }
+            if (mReturningToStart && action == MotionEvent.ACTION_DOWN) {
+                mReturningToStart = false;
+            }
 
-        switch (mDirection) {
-            case BOTTOM:
-                if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {
-                    // Fail fast if we're not in a state where a swipe is possible
-                    return false;
-                }
-                break;
-            case TOP:
-            default:
-                if (!isEnabled() || mReturningToStart || canChildScrollUp() || mRefreshing) {
-                    // Fail fast if we're not in a state where a swipe is possible
-                    return false;
-                }
-                break;
-        }
-
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
-                mIsBeingDragged = false;
-                break;
-
-            case MotionEvent.ACTION_MOVE: {
-                final int pointerIndex = MotionEventCompat.findPointerIndex(ev, mActivePointerId);
-                if (pointerIndex < 0) {
-                    return false;
-                }
-
-                final float y = MotionEventCompat.getY(ev, pointerIndex);
-
-                float overscrollTop;
-                switch (mDirection) {
-                    case BOTTOM:
-                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
-                        break;
-                    case TOP:
-                    default:
-                        overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
-                        break;
-                }
-                if (mIsBeingDragged) {
-                    mProgress.showArrow(true);
-                    float originalDragPercent = overscrollTop / mTotalDragDistance;
-                    if (originalDragPercent < 0) {
+            switch (mDirection) {
+                case BOTTOM:
+                    if (!isEnabled() || mReturningToStart || canChildScrollDown() || mRefreshing) {
+                        // Fail fast if we're not in a state where a swipe is possible
                         return false;
                     }
-                    float dragPercent = Math.min(1f, Math.abs(originalDragPercent));
-                    float adjustedPercent = (float) Math.max(dragPercent - .4, 0) * 5 / 3;
-                    float extraOS = Math.abs(overscrollTop) - mTotalDragDistance;
-                    float slingshotDist = mUsingCustomStart ? mSpinnerFinalOffset
-                            - mOriginalOffsetTop : mSpinnerFinalOffset;
-                    float tensionSlingshotPercent = Math.max(0,
-                            Math.min(extraOS, slingshotDist * 2) / slingshotDist);
-                    float tensionPercent = (float) ((tensionSlingshotPercent / 4) - Math.pow(
-                            (tensionSlingshotPercent / 4), 2)) * 2f;
-                    float extraMove = (slingshotDist) * tensionPercent * 2;
+                    break;
+                case TOP:
+                default:
+                    if (!isEnabled() || mReturningToStart || canChildScrollUp() || mRefreshing) {
+                        // Fail fast if we're not in a state where a swipe is possible
+                        return false;
+                    }
+                    break;
+            }
 
-                    // int targetY = mOriginalOffsetTop + (int) ((slingshotDist * dragPercent) + extraMove);
-                    int targetY;
-                    if (mDirection == SwipyRefreshLayoutDirection.TOP) {
-                        targetY = mOriginalOffsetTop + (int) ((slingshotDist * dragPercent) + extraMove);
-                    } else {
-                        targetY = mOriginalOffsetTop - (int) ((slingshotDist * dragPercent) + extraMove);
+            switch (action) {
+                case MotionEvent.ACTION_DOWN:
+                    mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
+                    mIsBeingDragged = false;
+                    break;
+
+                case MotionEvent.ACTION_MOVE: {
+                    final int pointerIndex = MotionEventCompat.findPointerIndex(ev, mActivePointerId);
+                    if (pointerIndex < 0) {
+                        return false;
                     }
-                    // where 1.0f is a full circle
-                    if (mCircleView.getVisibility() != View.VISIBLE) {
-                        mCircleView.setVisibility(View.VISIBLE);
+
+                    final float y = MotionEventCompat.getY(ev, pointerIndex);
+
+                    float overscrollTop;
+                    switch (mDirection) {
+                        case BOTTOM:
+                            overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
+                            break;
+                        case TOP:
+                        default:
+                            overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
+                            break;
                     }
-                    if (!mScale) {
-                        ViewCompat.setScaleX(mCircleView, 1f);
-                        ViewCompat.setScaleY(mCircleView, 1f);
-                    }
-                    if (overscrollTop < mTotalDragDistance) {
-                        if (mScale) {
-                            setAnimationProgress(overscrollTop / mTotalDragDistance);
+                    if (mIsBeingDragged) {
+                        mProgress.showArrow(true);
+                        float originalDragPercent = overscrollTop / mTotalDragDistance;
+                        if (originalDragPercent < 0) {
+                            return false;
                         }
-                        if (mProgress.getAlpha() > STARTING_PROGRESS_ALPHA
-                                && !isAnimationRunning(mAlphaStartAnimation)) {
-                            // Animate the alpha
-                            startProgressAlphaStartAnimation();
+                        float dragPercent = Math.min(1f, Math.abs(originalDragPercent));
+                        float adjustedPercent = (float) Math.max(dragPercent - .4, 0) * 5 / 3;
+                        float extraOS = Math.abs(overscrollTop) - mTotalDragDistance;
+                        float slingshotDist = mUsingCustomStart ? mSpinnerFinalOffset
+                                - mOriginalOffsetTop : mSpinnerFinalOffset;
+                        float tensionSlingshotPercent = Math.max(0,
+                                Math.min(extraOS, slingshotDist * 2) / slingshotDist);
+                        float tensionPercent = (float) ((tensionSlingshotPercent / 4) - Math.pow(
+                                (tensionSlingshotPercent / 4), 2)) * 2f;
+                        float extraMove = (slingshotDist) * tensionPercent * 2;
+
+                        // int targetY = mOriginalOffsetTop + (int) ((slingshotDist * dragPercent) + extraMove);
+                        int targetY;
+                        if (mDirection == SwipyRefreshLayoutDirection.TOP) {
+                            targetY = mOriginalOffsetTop + (int) ((slingshotDist * dragPercent) + extraMove);
+                        } else {
+                            targetY = mOriginalOffsetTop - (int) ((slingshotDist * dragPercent) + extraMove);
                         }
-                        float strokeStart = (float) (adjustedPercent * .8f);
-                        mProgress.setStartEndTrim(0f, Math.min(MAX_PROGRESS_ANGLE, strokeStart));
-                        mProgress.setArrowScale(Math.min(1f, adjustedPercent));
-                    } else {
-                        if (mProgress.getAlpha() < MAX_ALPHA
-                                && !isAnimationRunning(mAlphaMaxAnimation)) {
-                            // Animate the alpha
-                            startProgressAlphaMaxAnimation();
+                        // where 1.0f is a full circle
+                        if (mCircleView.getVisibility() != View.VISIBLE) {
+                            mCircleView.setVisibility(View.VISIBLE);
                         }
+                        if (!mScale) {
+                            ViewCompat.setScaleX(mCircleView, 1f);
+                            ViewCompat.setScaleY(mCircleView, 1f);
+                        }
+                        if (overscrollTop < mTotalDragDistance) {
+                            if (mScale) {
+                                setAnimationProgress(overscrollTop / mTotalDragDistance);
+                            }
+                            if (mProgress.getAlpha() > STARTING_PROGRESS_ALPHA
+                                    && !isAnimationRunning(mAlphaStartAnimation)) {
+                                // Animate the alpha
+                                startProgressAlphaStartAnimation();
+                            }
+                            float strokeStart = (float) (adjustedPercent * .8f);
+                            mProgress.setStartEndTrim(0f, Math.min(MAX_PROGRESS_ANGLE, strokeStart));
+                            mProgress.setArrowScale(Math.min(1f, adjustedPercent));
+                        } else {
+                            if (mProgress.getAlpha() < MAX_ALPHA
+                                    && !isAnimationRunning(mAlphaMaxAnimation)) {
+                                // Animate the alpha
+                                startProgressAlphaMaxAnimation();
+                            }
+                        }
+                        float rotation = (-0.25f + .4f * adjustedPercent + tensionPercent * 2) * .5f;
+                        mProgress.setProgressRotation(rotation);
+                        setTargetOffsetTopAndBottom(targetY - mCurrentTargetOffsetTop,
+                                true /* requires update */);
                     }
-                    float rotation = (-0.25f + .4f * adjustedPercent + tensionPercent * 2) * .5f;
-                    mProgress.setProgressRotation(rotation);
-                    setTargetOffsetTopAndBottom(targetY - mCurrentTargetOffsetTop,
-                            true /* requires update */);
+                    break;
                 }
-                break;
-            }
-            case MotionEventCompat.ACTION_POINTER_DOWN: {
-                final int index = MotionEventCompat.getActionIndex(ev);
-                mActivePointerId = MotionEventCompat.getPointerId(ev, index);
-                break;
-            }
+                case MotionEventCompat.ACTION_POINTER_DOWN: {
+                    final int index = MotionEventCompat.getActionIndex(ev);
+                    mActivePointerId = MotionEventCompat.getPointerId(ev, index);
+                    break;
+                }
 
-            case MotionEventCompat.ACTION_POINTER_UP:
-                onSecondaryPointerUp(ev);
-                break;
+                case MotionEventCompat.ACTION_POINTER_UP:
+                    onSecondaryPointerUp(ev);
+                    break;
 
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL: {
-                if (mActivePointerId == INVALID_POINTER) {
-                    if (action == MotionEvent.ACTION_UP) {
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL: {
+                    if (mActivePointerId == INVALID_POINTER) {
+                        if (action == MotionEvent.ACTION_UP) {
+                        }
+                        return false;
                     }
+                    final int pointerIndex = MotionEventCompat.findPointerIndex(ev, mActivePointerId);
+                    final float y = MotionEventCompat.getY(ev, pointerIndex);
+
+                    float overscrollTop;
+                    switch (mDirection) {
+                        case BOTTOM:
+                            overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
+                            break;
+                        case TOP:
+                        default:
+                            overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
+                            break;
+                    }
+                    mIsBeingDragged = false;
+                    if (overscrollTop > mTotalDragDistance) {
+                        setRefreshing(true, true /* notify */);
+                    } else {
+                        // cancel refresh
+                        mRefreshing = false;
+                        mProgress.setStartEndTrim(0f, 0f);
+                        AnimationListener listener = null;
+                        if (!mScale) {
+                            listener = new AnimationListener() {
+
+                                @Override
+                                public void onAnimationStart(Animation animation) {
+                                }
+
+                                @Override
+                                public void onAnimationEnd(Animation animation) {
+                                    if (!mScale) {
+                                        startScaleDownAnimation(null);
+                                    }
+                                }
+
+                                @Override
+                                public void onAnimationRepeat(Animation animation) {
+                                }
+
+                            };
+                        }
+                        animateOffsetToStartPosition(mCurrentTargetOffsetTop, listener);
+                        mProgress.showArrow(false);
+                    }
+                    mActivePointerId = INVALID_POINTER;
                     return false;
                 }
-                final int pointerIndex = MotionEventCompat.findPointerIndex(ev, mActivePointerId);
-                final float y = MotionEventCompat.getY(ev, pointerIndex);
-
-                float overscrollTop;
-                switch (mDirection) {
-                    case BOTTOM:
-                        overscrollTop = (mInitialMotionY - y) * DRAG_RATE;
-                        break;
-                    case TOP:
-                    default:
-                        overscrollTop = (y - mInitialMotionY) * DRAG_RATE;
-                        break;
-                }
-                mIsBeingDragged = false;
-                if (overscrollTop > mTotalDragDistance) {
-                    setRefreshing(true, true /* notify */);
-                } else {
-                    // cancel refresh
-                    mRefreshing = false;
-                    mProgress.setStartEndTrim(0f, 0f);
-                    AnimationListener listener = null;
-                    if (!mScale) {
-                        listener = new AnimationListener() {
-
-                            @Override
-                            public void onAnimationStart(Animation animation) {
-                            }
-
-                            @Override
-                            public void onAnimationEnd(Animation animation) {
-                                if (!mScale) {
-                                    startScaleDownAnimation(null);
-                                }
-                            }
-
-                            @Override
-                            public void onAnimationRepeat(Animation animation) {
-                            }
-
-                        };
-                    }
-                    animateOffsetToStartPosition(mCurrentTargetOffsetTop, listener);
-                    mProgress.showArrow(false);
-                }
-                mActivePointerId = INVALID_POINTER;
-                return false;
             }
+        } catch (Exception e) {
+            Log.e(TAG, "An exception occured during SwipyRefreshLayout onTouchEvent " + e.toString());
         }
 
         return true;
