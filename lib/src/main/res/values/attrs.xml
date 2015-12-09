@@ -2,7 +2,7 @@
 <resources>
 
     <declare-styleable name="SwipyRefreshLayout">
-        <attr name="direction">
+        <attr name="srldirection">
             <enum name="top" value="0" />
             <enum name="bottom" value="1" />
             <enum name="both" value="2" />
