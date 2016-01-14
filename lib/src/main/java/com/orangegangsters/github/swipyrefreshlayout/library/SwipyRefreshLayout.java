@@ -293,7 +293,7 @@ public class SwipyRefreshLayout extends ViewGroup {
 
         final TypedArray a2 = context.obtainStyledAttributes(attrs, R.styleable.SwipyRefreshLayout);
         SwipyRefreshLayoutDirection direction
-                = SwipyRefreshLayoutDirection.getFromInt(a2.getInt(R.styleable.SwipyRefreshLayout_direction, 0));
+                = SwipyRefreshLayoutDirection.getFromInt(a2.getInt(R.styleable.SwipyRefreshLayout_srl_direction, 0));
         if (direction != SwipyRefreshLayoutDirection.BOTH) {
             mDirection = direction;
             mBothDirection = false;
