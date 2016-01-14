@@ -6,7 +6,7 @@ A SwipeRefreshLayout extension that allows to swipe in both direction (API 9+)
 To include in your project, add this to your build.gradle file:
 ```
    //SwipyRefreshLayout
-   compile 'com.github.orangegangsters:swipy:1.2.1@aar'
+   compile 'com.github.orangegangsters:swipy:1.2.2@aar'
 ```
 
 ![Demo](app/src/main/res/raw/github_gif.gif)
@@ -22,7 +22,7 @@ If you want an example on how to use it, you can find an example app in this rep
         android:id="@+id/swipyrefreshlayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:direction="both">
+        app:srl_direction="both">
 
         <ListView
             android:id="@+id/listview"
