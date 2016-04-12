@@ -48,15 +48,15 @@ mSwipyRefreshLayout.setOnRefreshListener(new SwipyRefreshLayout.OnRefreshListene
 
 * XML:
 ```
-app:direction="top"
+app:srl_direction="top"
 ```
 OR
 ```
-app:direction="bottom"
+app:srl_direction="bottom"
 ```
 OR
 ```
-app:direction="both"
+app:srl_direction="both"
 ```
 
 * Programmatically:
