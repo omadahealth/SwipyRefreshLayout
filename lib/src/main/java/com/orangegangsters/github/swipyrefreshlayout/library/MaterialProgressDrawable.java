@@ -53,6 +53,7 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
     private static final Interpolator END_CURVE_INTERPOLATOR = new EndCurveInterpolator();
     private static final Interpolator START_CURVE_INTERPOLATOR = new StartCurveInterpolator();
     private static final Interpolator EASE_INTERPOLATOR = new AccelerateDecelerateInterpolator();
+    private boolean stopped;
 
     @Retention(RetentionPolicy.CLASS)
     @IntDef({LARGE, DEFAULT})
@@ -138,8 +139,6 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
      * Set the overall size for the progress spinner. This updates the radius
      * and stroke width of the ring.
      *
-     * @param size One of {@link com.orangegangsters.github.swiperefreshlayout.MaterialProgressDrawable.LARGE} or
-     *            {@link com.orangegangsters.github.swiperefreshlayout.MaterialProgressDrawable.DEFAULT}
      */
     public void updateSizes(@ProgressDrawableSize int size) {
         if (size == LARGE) {
@@ -268,6 +267,7 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
 
     @Override
     public void start() {
+        stopped = false;
         mAnimation.reset();
         mRing.storeOriginals();
         // Already showing some part of the ring
@@ -282,6 +282,7 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
 
     @Override
     public void stop() {
+        stopped = true;
         mParent.clearAnimation();
         setRotation(0);
         mRing.setShowArrow(false);
@@ -317,6 +318,9 @@ class MaterialProgressDrawable extends Drawable implements Animatable {
 
             @Override
             public void onAnimationEnd(Animation animation) {
+                if (stopped) {
+                    return;
+                }
                 ring.goToNextColor();
                 ring.storeOriginals();
                 ring.setShowArrow(false);
