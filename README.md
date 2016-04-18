@@ -6,7 +6,7 @@ A SwipeRefreshLayout extension that allows to swipe in both direction (API 9+)
 To include in your project, add this to your build.gradle file:
 ```
    //SwipyRefreshLayout
-   compile 'com.github.orangegangsters:swipy:1.2.2@aar'
+   compile 'com.github.orangegangsters:swipy:1.2.3@aar'
 ```
 
 ![Demo](app/src/main/res/raw/github_gif.gif)
@@ -79,9 +79,6 @@ mSwipyRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTH);
 
 ### By Developers:
 [Olivier Goutay](https://github.com/olivierg13) and [Stoyan Dimitrov](https://github.com/StoyanD)
-
-### Pull Requests By:
-[realaboo](https://github.com/realaboo)
 
 ========
 
