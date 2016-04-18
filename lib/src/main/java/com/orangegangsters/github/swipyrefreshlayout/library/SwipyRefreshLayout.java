@@ -1149,4 +1149,8 @@ public class SwipyRefreshLayout extends ViewGroup {
                 break;
         }
     }
+
+    public CircleImageView getCircleView() {
+        return mCircleView;
+    }
 }

@@ -1,65 +1,71 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
 
-    <com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout
-        android:id="@+id/swipyrefreshlayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/button_refresh"
-        app:srl_direction="both">
+    <data></data>
 
-        <ListView
-            android:id="@+id/listview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
-
-    <Button
-        android:id="@+id/button_refresh"
-        android:layout_above="@+id/bottom_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Refresh"
-        android:layout_centerHorizontal="true" />
-
-    <LinearLayout
-        android:id="@+id/bottom_layout"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentBottom="true">
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
 
-
-        <Button
-            android:id="@+id/button_top"
+        <com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout
+            android:id="@+id/swipyrefreshlayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/button_margin"
-            android:text="TOP"
-            android:layout_weight="1" />
+            android:layout_above="@+id/button_refresh"
+            app:srl_direction="both">
 
+            <ListView
+                android:id="@+id/listview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
-        <Button
-            android:id="@+id/button_bottom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/button_margin"
-            android:text="BOTTOM"
-            android:layout_weight="1" />
-
+        </com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
 
         <Button
-            android:id="@+id/button_both"
+            android:id="@+id/button_refresh"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/button_margin"
-            android:text="BOTH"
-            android:layout_weight="1" />
-    </LinearLayout>
+            android:layout_above="@+id/bottom_layout"
+            android:layout_centerHorizontal="true"
+            android:text="Refresh"/>
 
-</RelativeLayout>
+        <LinearLayout
+            android:id="@+id/bottom_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal">
+
+
+            <Button
+                android:id="@+id/button_top"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/button_margin"
+                android:layout_weight="1"
+                android:text="TOP"/>
+
+
+            <Button
+                android:id="@+id/button_bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/button_margin"
+                android:layout_weight="1"
+                android:text="BOTTOM"/>
+
+
+            <Button
+                android:id="@+id/button_both"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/button_margin"
+                android:layout_weight="1"
+                android:text="BOTH"/>
+        </LinearLayout>
+
+    </RelativeLayout>
+</layout>
