@@ -9,6 +9,12 @@ To include in your project, add this to your build.gradle file:
    compile 'com.github.orangegangsters:swipy:1.2.3@aar'
 ```
 
+Starting from 1.2.3 we are moving to a new package name:
+```
+   //SwipyRefreshLayout
+   compile 'com.github.omadahealth:swipy:1.2.3@aar'
+```
+
 ![Demo](app/src/main/res/raw/github_gif.gif)
 
 ========
